@@ -471,6 +471,7 @@ const canSignup = computed(() => {
     availability.value.phone === true &&
     availability.value.email === true &&
     availability.value.nickname === true &&
+    availability.value.password === true &&
     verifyOk.value === true &&
     !loading.value.signup
   );
