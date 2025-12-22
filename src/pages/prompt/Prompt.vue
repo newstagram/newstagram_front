@@ -132,18 +132,47 @@ const loadingSearch = ref(false);
 const loadingMore = ref(false);
 const errorMsg = ref('');
 
+/**
+ * ✅ 수정 포인트 1
+ * - store의 ref를 직접 덮어쓰지 말고(setup store 깨짐)
+ * - store에 raw(id/query) + searchHistory(문자열) 동기화
+ */
 const syncStoreHistoryFromApi = () => {
-  const queries = (historyList.value || [])
-    .map((x) => (x?.query || '').trim())
+  const rawArr = Array.isArray(historyList.value) ? historyList.value : [];
+
+  // 서버 응답이 [{id, query}] 형태라고 가정하되 방어
+  const normalizedRaw = rawArr
+    .map((x) => {
+      if (!x || typeof x !== 'object') return null;
+      const id = x.id ?? x.historyId ?? x.history_id ?? x.historyID;
+      const query = String(x.query ?? x.keyword ?? x.q ?? '').trim();
+      if (id === undefined || id === null) return null;
+      if (!query) return null;
+      return { id, query };
+    })
     .filter(Boolean);
 
-  promptStore.searchHistory = queries;
+  const queries = normalizedRaw.map((x) => x.query);
+
+  // ✅ store가 확장되어 있다면 raw도 같이 넣어줌(삭제 기능/네비 표시)
+  if (typeof promptStore.setRaw === 'function') {
+    promptStore.setRaw(normalizedRaw);
+  }
+
+  // ✅ 문자열 히스토리는 항상 setHistory로
+  if (typeof promptStore.setHistory === 'function') {
+    promptStore.setHistory(queries);
+  } else {
+    // 예외 방어
+    promptStore.searchHistory.value = queries;
+  }
 };
 
 const reloadHistory = async () => {
   loadingHistory.value = true;
   try {
     const data = await PromptApi.getPromptList();
+    // PromptApi.getPromptList()는 data를 return하므로 그대로 array인지 확인
     historyList.value = Array.isArray(data) ? data : [];
     syncStoreHistoryFromApi();
   } catch (e) {
@@ -194,6 +223,8 @@ const runSearch = async (query) => {
     }
 
     await fetchArticles({ query: q, nextPage: 0, append: false });
+
+    // ✅ 검색 후 히스토리 최신화
     await reloadHistory();
   } catch (e) {
     console.log(e);
