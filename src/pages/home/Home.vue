@@ -1,7 +1,6 @@
 <!-- src/pages/home/Home.vue -->
 <template>
   <main style="padding:16px;">
-    <h1 style="margin:0 0 12px;">Home</h1>
 
     <section style="display:flex; gap:8px; margin-bottom:12px;">
       <button type="button" :style="tabStyle('REALTIME')" @click="changePeriod('REALTIME')" :disabled="loading">
@@ -65,9 +64,6 @@
             <div style="flex:1; min-width: 0;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                 <div style="font-size:12px; color:#666;">
-                  Group #{{ g.groupId }} · Rank {{ g.rankInGroup }}
-                </div>
-                <div style="font-size:12px; color:#666;">
                   {{ g.article?.publishedAt ? formatDate(g.article.publishedAt) : '' }}
                 </div>
               </div>
@@ -84,18 +80,6 @@
                   align-items: center;
                   gap: 4px;
               ">
-                <span v-if="g.article?.author">by {{ g.article.author }}</span>
-                <span v-if="g.article?.author && g.article?.url"> · </span>
-                <span v-if="g.article?.url" style="
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    display: block; 
-                    flex: 1;   
-                    min-width: 0;
-                  ">
-                  {{ g.article.url }}
-                </span>
               </div>
 
               <p style="margin:0; color:#333; line-height:1.4;">
