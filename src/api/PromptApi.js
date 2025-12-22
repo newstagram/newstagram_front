@@ -18,4 +18,12 @@ export default {
         const { data } = await api.post(`${BASE_URL}/v1/search`,payload, {headers: { 'Content-Type': 'application/json' }});
         return data;
     },
+
+    async deletePrompt(historyId) {
+        await refreshToken.checkToken();
+        const { data } = await api.delete(`${BASE_URL}/v1/search/history`, {
+        params: { historyId },
+        });
+        return data;
+    },
 }
