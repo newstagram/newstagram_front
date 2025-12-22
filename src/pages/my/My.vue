@@ -1,8 +1,6 @@
 <!-- src/pages/my/My.vue -->
 <template>
   <main style="padding:16px;">
-    <h1 style="margin:0 0 12px;">My</h1>
-
     <section style="display:flex; gap:8px; margin-bottom:12px;">
       <button type="button" @click="reload" :disabled="loading || loadingMore">
         새로고침
@@ -58,9 +56,6 @@
 
             <div style="flex:1;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                <div style="font-size:12px; color:#666;">
-                  {{ a.author ? `by ${a.author}` : '' }}
-                </div>
                 <div style="font-size:12px; color:#666;">
                   {{ a.publishedAt ? formatDate(a.publishedAt) : '' }}
                 </div>

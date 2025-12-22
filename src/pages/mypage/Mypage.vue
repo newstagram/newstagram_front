@@ -1,18 +1,18 @@
 <!-- src/pages/mypage/Mypage.vue -->
 <template>
   <main style="padding:16px; max-width:720px;">
-    <h1 style="margin:0 0 12px;">My Page</h1>
+    <h1 style="margin:0 0 12px; color: white;">My Page</h1>
 
     <!-- 로딩/에러 -->
     <div v-if="loadingInfo" style="padding:12px 0;">불러오는 중...</div>
     <div v-else-if="infoError" style="padding:12px 0; color:#c00;">
       {{ infoError }}
     </div>
-
+    
     <!-- 내 정보 -->
     <section
       v-if="!loadingInfo && myInfo"
-      style="border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:16px;"
+      style="border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:16px; background: white;"
     >
       <h2 style="margin:0 0 10px;">회원정보</h2>
 
@@ -30,7 +30,7 @@
     </section>
 
     <!-- 닉네임 변경 -->
-    <section style="border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:16px;">
+    <section style="border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:16px; background: white;">
       <h2 style="margin:0 0 10px;">닉네임 변경</h2>
 
       <div style="display:flex; gap:8px; align-items:center;">
@@ -57,7 +57,7 @@
     </section>
 
     <!-- 비밀번호 변경 -->
-    <section style="border:1px solid #ddd; border-radius:10px; padding:12px;">
+    <section style="border:1px solid #ddd; border-radius:10px; padding:12px; background: white;">
       <h2 style="margin:0 0 10px;">비밀번호 변경</h2>
 
       <div style="display:flex; flex-direction:column; gap:10px;">

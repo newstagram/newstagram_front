@@ -2,10 +2,8 @@
 <template>
   <main style="display:flex; gap:16px; padding:16px;">
     <!-- 우측: 기사 리스트 -->
-    <section style="flex:1; border:1px solid #ddd; border-radius:8px; padding:12px;">
-      <h1 style="margin:0 0 12px;">Prompt</h1>
-
-      <hr style="margin:16px 0;" />
+    <section style="flex:1; border:1px solid #ddd; border-radius:8px; padding:12px; background: white;">
+      <!-- <hr style="margin:16px 0;" /> -->
 
       <!-- 현재 검색 상태 -->
       <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
