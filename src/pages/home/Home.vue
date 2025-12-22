@@ -42,6 +42,7 @@
             padding:12px;
             background:#fff;
             cursor:pointer;
+            width: 100%;
           "
           :title="g.article?.url ? '클릭하면 기사 링크를 엽니다.' : ''"
         >
@@ -61,7 +62,7 @@
               </div>
             </div>
 
-            <div style="flex:1;">
+            <div style="flex:1; min-width: 0;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
                 <div style="font-size:12px; color:#666;">
                   Group #{{ g.groupId }} · Rank {{ g.rankInGroup }}
@@ -75,10 +76,26 @@
                 {{ g.article?.title }}
               </h3>
 
-              <div style="font-size:12px; color:#666; margin-bottom:8px;">
+              <div style="
+                  font-size:12px;
+                  color:#666;
+                  margin-bottom:8px;
+                  display: flex;       
+                  align-items: center;
+                  gap: 4px;
+              ">
                 <span v-if="g.article?.author">by {{ g.article.author }}</span>
                 <span v-if="g.article?.author && g.article?.url"> · </span>
-                <span v-if="g.article?.url">{{ g.article.url }}</span>
+                <span v-if="g.article?.url" style="
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    display: block; 
+                    flex: 1;   
+                    min-width: 0;
+                  ">
+                  {{ g.article.url }}
+                </span>
               </div>
 
               <p style="margin:0; color:#333; line-height:1.4;">
