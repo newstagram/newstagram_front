@@ -1,5 +1,7 @@
 <template>
   <div class="app-shell">
+    <SnowCanvas />
+
     <!-- 로그인 상태 + 현재 라우트가 레이아웃 허용일 때만 노출 -->
     <Header v-if="showLayout" />
 
@@ -29,6 +31,7 @@ import Header from '@/components/Header.vue';
 import Navi from '@/components/Navi.vue';
 import WritePrompt from '@/components/WritePrompt.vue';
 import { useUserStore } from '@/stores/user';
+import SnowCanvas from './components/SnowCanvas.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -108,11 +111,12 @@ const onGlobalSubmit = async (promptText) => {
 html,
 body {
   height: 100%;
+  overscroll-behavior: none;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: radial-gradient(circle at bottom, #0a0a15, #000);
   color: var(--text);
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple SD Gothic Neo",
     "Noto Sans KR", "Malgun Gothic", sans-serif;

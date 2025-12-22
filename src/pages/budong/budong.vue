@@ -1,7 +1,7 @@
 <!-- src/pages/my/My.vue -->
 <template>
   <main style="padding:16px;">
-    <h1 style="margin:0 0 12px;">부동산</h1>
+    <h1 style="margin:0 0 12px; color: white;">부동산</h1>
 
     <section style="display:flex; gap:8px; margin-bottom:12px;">
       <button type="button" @click="reload" :disabled="loading || loadingMore">

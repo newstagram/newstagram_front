@@ -1,7 +1,7 @@
 <!-- src/pages/home/Home.vue -->
 <template>
   <main style="padding:16px;">
-    <h1 style="margin:0 0 12px;">Home</h1>
+    <h1 style="margin:0 0 12px; color: white;">Home</h1>
 
     <section style="display:flex; gap:8px; margin-bottom:12px;">
       <button type="button" :style="tabStyle('REALTIME')" @click="changePeriod('REALTIME')" :disabled="loading">
