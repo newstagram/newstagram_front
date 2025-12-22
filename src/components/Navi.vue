@@ -3,15 +3,10 @@
     <nav class="sidenav__nav">
       <!-- 메인 + 하위 -->
       <div class="navgroup">
-        <button
-          :class="navBtnClass('home')"
-          type="button"
-          @click="goHome"
-        >
+        <button :class="navBtnClass('home')" type="button" @click="goHome">
           메인
         </button>
 
-        <!-- ✅ 항상 보이도록 조건 제거 -->
         <div class="subnav">
           <button
             type="button"
@@ -38,57 +33,82 @@
       </div>
 
       <!-- 내꺼 -->
-      <button
-        :class="navBtnClass('my')"
-        type="button"
-        @click="goMy"
-      >
+      <button :class="navBtnClass('my')" type="button" @click="goMy">
         내꺼
+      </button>
+
+      <!-- 부동산 -->
+      <button :class="navBtnClass('budong')" type="button" @click="goBuDongSan">
+        부동산
       </button>
 
       <!-- 프롬프트 + 하위 -->
       <div class="navgroup">
-        <button
-          :class="navBtnClass('prompt')"
-          type="button"
-          @click="goPrompt"
-        >
-          프롬프트
-        </button>
+        <!-- ✅ 프롬프트 버튼 오른쪽에 삭제 버튼 -->
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button :class="navBtnClass('prompt')" type="button" @click="goPrompt" style="flex:1;">
+            프롬프트
+          </button>
 
-        <!-- ✅ 항상 보이도록 조건 제거 -->
+          <button
+            type="button"
+            class="sidenav__btn"
+            @click="toggleDeleteMode"
+            :disabled="loadingHistory"
+            style="width:auto; padding:10px 12px; font-weight:800;"
+            :title="deleteMode ? '삭제 모드 종료' : '삭제 모드'"
+          >
+            {{ deleteMode ? '완료' : '삭제' }}
+          </button>
+        </div>
+
         <div class="subnav">
-          <div v-if="!promptHistory.length" class="subnav__empty">
+          <div v-if="loadingHistory" class="subnav__empty">
+            불러오는 중...
+          </div>
+
+          <div v-else-if="!historyItems.length" class="subnav__empty">
             검색 기록 없음
           </div>
 
-          <button
-            v-for="(q, idx) in promptHistory"
-            :key="`${q}-${idx}`"
-            type="button"
-            class="subnav__btn"
-            @click="goPromptWithQuery(q)"
-            :title="q"
+          <!-- ✅ (id, query) 기반 렌더링 -->
+          <div
+            v-for="(item, idx) in historyItems"
+            :key="`${item.id}-${idx}`"
+            style="display:flex; align-items:center; gap:8px;"
           >
-            {{ q }}
-          </button>
+            <button
+              type="button"
+              class="subnav__btn"
+              @click="goPromptWithQuery(item.query)"
+              :title="item.query"
+              style="flex:1;"
+              :disabled="deletingId === item.id"
+            >
+              {{ item.query }}
+            </button>
+
+            <!-- 삭제 모드일 때만 - 버튼 -->
+            <button
+              v-if="deleteMode"
+              type="button"
+              class="subnav__btn"
+              @click="onDelete(item.id)"
+              :disabled="deletingId === item.id"
+              style="width:40px; padding:8px 0; text-align:center;"
+              title="삭제"
+            >
+              {{ deletingId === item.id ? '...' : '-' }}
+            </button>
+          </div>
         </div>
       </div>
-
-      <!-- 부동산 -->
-      <button
-        :class="navBtnClass('budong')"
-        type="button"
-        @click="goBuDongSan"
-      >
-        부동산
-      </button>
     </nav>
   </aside>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useHomePeriodStore } from '@/stores/homePeriodStore';
 import { usePromptStore } from '@/stores/promptStore';
@@ -100,6 +120,21 @@ const homePeriodStore = useHomePeriodStore();
 const promptStore = usePromptStore();
 
 const currentName = computed(() => route.name);
+
+const loadingHistory = computed(() => !!promptStore.loadingHistory);
+
+// ✅ 삭제 모드
+const deleteMode = ref(false);
+const deletingId = ref(null);
+
+const toggleDeleteMode = () => {
+  deleteMode.value = !deleteMode.value;
+};
+
+// ✅ Navi 마운트 시 히스토리 로딩
+onMounted(async () => {
+  await promptStore.loadHistory({ force: false });
+});
 
 /* ---------- class helpers ---------- */
 const navBtnClass = (name) => {
@@ -115,11 +150,19 @@ const subBtnClass = (active) => {
 const isHomeActivePeriod = (p) =>
   currentName.value === 'home' && homePeriodStore.period === p;
 
-const promptHistory = computed(() => {
-  const list = Array.isArray(promptStore.searchHistory)
-    ? promptStore.searchHistory
-    : [];
-  return list.slice(0, 10);
+/**
+ * ✅ id가 있어야 삭제 가능하므로 historyRaw 기반으로 표시
+ * - 최대 10개
+ */
+const historyItems = computed(() => {
+  const raw = Array.isArray(promptStore.historyRaw) ? promptStore.historyRaw : [];
+  return raw
+    .map((x) => ({
+      id: x.id,
+      query: (x.query || '').trim(),
+    }))
+    .filter((x) => x.id !== undefined && x.id !== null && x.query)
+    .slice(0, 10);
 });
 
 /* ---------- navigation ---------- */
@@ -145,9 +188,31 @@ const goPromptWithQuery = async (q) => {
 };
 
 const goBuDongSan = () => router.push({ name: 'budong' });
+
+/* ---------- delete ---------- */
+const onDelete = async (historyId) => {
+  if (historyId === undefined || historyId === null) return;
+  if (deletingId.value) return;
+
+  deletingId.value = historyId;
+  try {
+    await promptStore.deleteHistoryById(historyId);
+  } catch (e) {
+    console.log(e);
+    // 실패해도 UI가 망가지지 않게만 처리
+  } finally {
+    deletingId.value = null;
+  }
+};
 </script>
 
 <style scoped>
+@media (max-width: 900px) {
+  .sidenav {
+    position: static;
+    top: auto;
+  }
+}
 .sidenav {
   position: sticky;
   top: 72px;
