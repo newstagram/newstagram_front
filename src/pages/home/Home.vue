@@ -1,87 +1,138 @@
 <template>
-  <main style="padding:16px;">
+  <main class="home-container">
+    <section class="feed-card">
+      <header class="feed-header">
+        <div style="display: flex; align-items: center; gap: 8px; width: 100%">
+          <h2 class="desktop-label">
+            {{ periodLabel }}
+          </h2>
 
-    <section style="display:flex; gap:8px; margin-bottom:12px;">
-      <button type="button" :style="tabStyle('REALTIME')" @click="changePeriod('REALTIME')" :disabled="loading">
-        실시간 이슈
-      </button>
-      <button type="button" :style="tabStyle('DAILY')" @click="changePeriod('DAILY')" :disabled="loading">
-        일간 이슈
-      </button>
-      <button type="button" :style="tabStyle('WEEKLY')" @click="changePeriod('WEEKLY')" :disabled="loading">
-        주간 이슈
-      </button>
-
-      <div style="flex:1;"></div>
-
-      <button type="button" @click="reload" :disabled="loading">
-        새로고침
-      </button>
-    </section>
-
-    <div v-if="loading" style="padding:12px 0;">불러오는 중...</div>
-    <div v-else-if="errorMsg" style="padding:12px 0; color:#c00;">{{ errorMsg }}</div>
-
-    <section v-if="!loading">
-      <div v-if="!groups.length" style="color:#666;">
-        표시할 이슈가 없습니다.
-      </div>
-
-      <div v-else style="display:flex; flex-direction:column; gap:12px;">
-        <button
-          v-for="g in groups"
-          :key="groupKey(g)"
-          type="button"
-          @click="openArticle(g.article)"
-          style="
-            text-align:left;
-            border:1px solid #eee;
-            border-radius:10px;
-            padding:12px;
-            background:#fff;
-            cursor:pointer;
-            width: 100%;
-          "
-          :title="g.article?.url ? '클릭하면 모달로 기사 원문을 보여줍니다.' : ''"
-        >
-          <div style="display:flex; gap:12px;">
-            <div style="width:120px; flex:0 0 120px;">
-              <img
-                v-if="g.article?.thumbnailUrl"
-                :src="g.article.thumbnailUrl"
-                alt="thumbnail"
-                style="width:120px; height:80px; object-fit:cover; border-radius:6px; border:1px solid #eee;"
-              />
-              <div
-                v-else
-                style="width:120px; height:80px; border-radius:6px; border:1px solid #eee; display:flex; align-items:center; justify-content:center; color:#999;"
-              >
-                No Image
-              </div>
-            </div>
-
-            <div style="flex:1; min-width: 0;">
-              <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-                <div style="font-size:12px; color:#666;">
-                  {{ g.article?.publishedAt ? formatDate(g.article.publishedAt) : '' }}
-                </div>
-              </div>
-
-              <h3 style="margin:6px 0 8px; font-size:16px;">
-                {{ g.article?.title }}
-              </h3>
-
-              <p style="margin:0; color:#333; line-height:1.4;">
-                {{ g.article?.description || g.article?.content }}
-              </p>
-            </div>
-          </div>
-        </button>
-
-        <div style="margin-top:16px; display:flex; justify-content:center; gap:8px;">
-          <button type="button" @click="loadMore" :disabled="loadingMore || !hasNext">
-            {{ loadingMore ? '불러오는 중...' : (hasNext ? '더 불러오기' : '마지막입니다') }}
+          <button
+            type="button"
+            :class="['tab-btn', { active: periodType === 'REALTIME' }]"
+            @click="changePeriod('REALTIME')"
+            :disabled="loading"
+          >
+            🔥 실시간
           </button>
+
+          <button
+            type="button"
+            :class="['tab-btn', { active: periodType === 'DAILY' }]"
+            @click="changePeriod('DAILY')"
+            :disabled="loading"
+          >
+            일간
+          </button>
+
+          <button
+            type="button"
+            :class="['tab-btn', { active: periodType === 'WEEKLY' }]"
+            @click="changePeriod('WEEKLY')"
+            :disabled="loading"
+          >
+            주간
+          </button>
+
+          <div style="flex: 1"></div>
+
+          <button
+            type="button"
+            class="refresh-icon-btn"
+            @click="reload"
+            :disabled="loading"
+            aria-label="새로고침"
+            title="새로고침"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="feed-body">
+        <div v-if="loading && groups.length === 0" class="status-msg">
+          이슈를 불러오는 중입니다...
+        </div>
+
+        <div v-else-if="errorMsg" class="status-msg error">
+          {{ errorMsg }}
+        </div>
+
+        <div v-if="!loading && !groups.length" class="status-msg">
+          표시할 이슈가 없습니다.
+        </div>
+
+        <div v-else style="display: flex; flex-direction: column; gap: 0">
+          <button
+            v-for="g in groups"
+            :key="groupKey(g)"
+            type="button"
+            class="article-item"
+            @click="openArticle(g.article)"
+            :title="
+              g.article?.url ? '클릭하면 모달로 기사 원문을 보여줍니다.' : ''
+            "
+          >
+            <div style="display: flex; gap: 16px">
+              <div class="thumbnail-wrapper">
+                <img
+                  v-if="g.article?.thumbnailUrl"
+                  :src="g.article.thumbnailUrl"
+                  alt="thumbnail"
+                  class="thumbnail-img"
+                />
+
+                <div v-else class="thumbnail-placeholder">No Image</div>
+              </div>
+
+              <div style="flex: 1; min-width: 0; text-align: left">
+                <div class="meta-info">
+                  <span class="date">{{
+                    g.article?.publishedAt
+                      ? formatDate(g.article.publishedAt)
+                      : ""
+                  }}</span>
+                </div>
+
+                <h3 class="article-title">
+                  {{ g.article?.title }}
+                </h3>
+
+                <p class="article-desc">
+                  {{ g.article?.description || g.article?.content }}
+                </p>
+              </div>
+            </div>
+          </button>
+
+          <div class="load-more-area">
+            <button
+              type="button"
+              class="load-more-btn"
+              @click="loadMore"
+              :disabled="loadingMore || !hasNext"
+            >
+              {{
+                loadingMore
+                  ? "불러오는 중..."
+                  : hasNext
+                  ? "더 불러오기"
+                  : "마지막입니다"
+              }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -96,6 +147,7 @@
       <div class="article-modal__panel">
         <header class="article-modal__header">
           <span>기사 원문</span>
+
           <button type="button" @click="closeModal">닫기</button>
         </header>
 
@@ -107,89 +159,92 @@
         />
       </div>
     </div>
-
   </main>
 </template>
 
 <script setup>
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
-import HomeApi from '../../api/HomeApi';
-import LogApi from '../../api/LogApi';
-import { useHomePeriodStore } from '../../stores/homePeriodStore';
+import { ref, onMounted, watch, onBeforeUnmount, computed } from "vue";
+import HomeApi from "../../api/HomeApi";
+import LogApi from "../../api/LogApi";
+import { useHomePeriodStore } from "../../stores/homePeriodStore";
 
 const homePeriodStore = useHomePeriodStore();
+const periodType = ref(homePeriodStore.period || "REALTIME");
 
-const periodType = ref(homePeriodStore.period || 'REALTIME');
+// 현재 선택된 기간에 따른 텍스트 라벨
+const periodLabel = computed(() => {
+  switch (periodType.value) {
+    case "REALTIME":
+      return "🔥 실시간 이슈";
+    case "DAILY":
+      return "📅 일간 이슈";
+    case "WEEKLY":
+      return "📆 주간 이슈";
+    default:
+      return "이슈";
+  }
+});
 
 const cursor = ref(0);
 const groups = ref([]);
-
 const hasNext = ref(false);
 const nextCursor = ref(0);
-
 const loading = ref(false);
 const loadingMore = ref(false);
-const errorMsg = ref('');
+const errorMsg = ref("");
 
 let didMount = false;
-
-const JTBC_PREFIX = 'https://news.jtbc.co.kr/';
+const JTBC_PREFIX = "https://news.jtbc.co.kr/";
 
 const modalOpen = ref(false);
-const iframeUrl = ref('');
-
+const iframeUrl = ref("");
 let __scrollY = 0;
 
 const lockBodyScroll = () => {
   __scrollY = window.scrollY || 0;
-  document.body.style.position = 'fixed';
+  document.body.style.position = "fixed";
   document.body.style.top = `-${__scrollY}px`;
-  document.body.style.left = '0';
-  document.body.style.right = '0';
-  document.body.style.width = '100%';
-  document.body.style.overflow = 'hidden';
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  document.body.style.overflow = "hidden";
 };
 
 const unlockBodyScroll = () => {
-  document.body.style.position = '';
-  document.body.style.top = '';
-  document.body.style.left = '';
-  document.body.style.right = '';
-  document.body.style.width = '';
-  document.body.style.overflow = '';
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  document.body.style.overflow = "";
   window.scrollTo(0, __scrollY);
 };
 
 const onKeyDown = (e) => {
   if (!modalOpen.value) return;
-  if (e.key === 'Escape') closeModal();
+  if (e.key === "Escape") closeModal();
 };
 
-const attachKeyListener = () => window.addEventListener('keydown', onKeyDown);
-const detachKeyListener = () => window.removeEventListener('keydown', onKeyDown);
+const attachKeyListener = () => window.addEventListener("keydown", onKeyDown);
+const detachKeyListener = () =>
+  window.removeEventListener("keydown", onKeyDown);
 
 const openInNewWindowWithNotice = (url) => {
-  alert('신문사 제한으로 외부창에서 기사를 띄웁니다.');
-  if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  alert("신문사 제한으로 외부창에서 기사를 띄웁니다.");
+  if (url) window.open(url, "_blank", "noopener,noreferrer");
 };
 
-const tabStyle = (type) => {
-  const active = periodType.value === type;
-  return {
-    padding: '10px 12px',
-    borderRadius: '10px',
-    border: '1px solid ' + (active ? '#333' : '#ddd'),
-    background: active ? '#f3f3f3' : '#fff',
-    cursor: 'pointer',
-  };
-};
-
-const groupKey = (g) => `${g.groupId}-${g.rankInGroup}-${g.article?.id ?? 'na'}`;
+const groupKey = (g) =>
+  `${g.groupId}-${g.rankInGroup}-${g.article?.id ?? "na"}`;
 
 const formatDate = (iso) => {
   try {
     const d = new Date(iso);
-    return d.toLocaleString();
+    return (
+      d.toLocaleDateString() +
+      " " +
+      d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    );
   } catch {
     return iso;
   }
@@ -200,12 +255,11 @@ const reset = () => {
   cursor.value = 0;
   hasNext.value = false;
   nextCursor.value = 0;
-  errorMsg.value = '';
+  errorMsg.value = "";
 };
 
 const fetchPage = async ({ type, cur, append }) => {
   const data = await HomeApi.getArticles(type, cur);
-
   const list = Array.isArray(data?.groups) ? data.groups : [];
   const info = data?.pageInfo || {};
 
@@ -218,14 +272,18 @@ const fetchPage = async ({ type, cur, append }) => {
 
 const loadInitial = async () => {
   loading.value = true;
-  errorMsg.value = '';
+  errorMsg.value = "";
   try {
     cursor.value = 0;
-    await fetchPage({ type: periodType.value, cur: cursor.value, append: false });
+    await fetchPage({
+      type: periodType.value,
+      cur: cursor.value,
+      append: false,
+    });
     if (hasNext.value) cursor.value = nextCursor.value;
   } catch (e) {
     console.log(e);
-    errorMsg.value = '이슈를 불러오는 중 오류가 발생했습니다.';
+    errorMsg.value = "이슈를 불러오는 중 오류가 발생했습니다.";
   } finally {
     loading.value = false;
   }
@@ -246,16 +304,18 @@ const reload = async () => {
 
 const loadMore = async () => {
   if (!hasNext.value || loadingMore.value || loading.value) return;
-
   loadingMore.value = true;
-  errorMsg.value = '';
-
+  errorMsg.value = "";
   try {
-    await fetchPage({ type: periodType.value, cur: cursor.value, append: true });
+    await fetchPage({
+      type: periodType.value,
+      cur: cursor.value,
+      append: true,
+    });
     if (hasNext.value) cursor.value = nextCursor.value;
   } catch (e) {
     console.log(e);
-    errorMsg.value = '추가 로딩 중 오류가 발생했습니다.';
+    errorMsg.value = "추가 로딩 중 오류가 발생했습니다.";
   } finally {
     loadingMore.value = false;
   }
@@ -270,27 +330,23 @@ const openArticle = async (article) => {
     console.log(e);
   }
 
-  const url = (article?.url || '').trim();
+  const url = (article?.url || "").trim();
   if (!url) return;
 
-  // JTBC만 안내 후 새창
   if (url.startsWith(JTBC_PREFIX)) {
     openInNewWindowWithNotice(url);
     return;
   }
 
-  // 그 외는 무조건 모달
   iframeUrl.value = url;
   modalOpen.value = true;
-
   lockBodyScroll();
   attachKeyListener();
 };
 
 const closeModal = () => {
   modalOpen.value = false;
-  iframeUrl.value = '';
-
+  iframeUrl.value = "";
   unlockBodyScroll();
   detachKeyListener();
 };
@@ -300,18 +356,15 @@ watch(
   async (p) => {
     if (!p) return;
     if (periodType.value === p) return;
-
     periodType.value = p;
-
     if (!didMount) return;
-
     reset();
     await loadInitial();
   }
 );
 
 onMounted(async () => {
-  periodType.value = homePeriodStore.period || 'REALTIME';
+  periodType.value = homePeriodStore.period || "REALTIME";
   await loadInitial();
   didMount = true;
 });
@@ -323,151 +376,289 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* 페이지 베이스 */
-main {
-  padding: 16px;
+.home-container {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
-/* 상단 타이틀 */
-h1 {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-
-/* 상단 컨트롤 바(버튼 줄) */
-section[style*="display:flex"][style*="margin-bottom:12px"] {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 10px;
-  box-shadow: var(--shadow);
-}
-
-/* 로딩/에러 텍스트 */
-div[style*="불러오는 중"] {
-  color: var(--muted);
-}
-div[style*="color:#c00"] {
-  color: #b91c1c !important;
-}
-
-/* 이슈 리스트 컨테이너 */
-div[style*="flex-direction:column"][style*="gap:12px"] {
-  margin-top: 8px;
-}
-
-/* 카드 버튼(이슈 아이템) */
-button[style*="text-align:left"][style*="border-radius:10px"][style*="padding:12px"] {
-  border: 1px solid var(--line) !important;
-  border-radius: var(--radius) !important;
-  background: var(--panel) !important;
-  box-shadow: var(--shadow) !important;
-  transition: transform 0.04s ease, background 0.12s ease, border-color 0.12s ease;
-}
-
-button[style*="text-align:left"][style*="border-radius:10px"][style*="padding:12px"]:hover {
-  background: #fafafa !important;
-  border-color: #d1d5db !important;
-}
-
-button[style*="text-align:left"][style*="border-radius:10px"][style*="padding:12px"]:active {
-  transform: translateY(1px);
-}
-
-/* 썸네일 영역 */
-img[alt="thumbnail"] {
-  border-radius: 12px !important;
-  border: 1px solid var(--line) !important;
-}
-
-div[style*="No Image"] {
-  border-radius: 12px !important;
-  border: 1px solid var(--line) !important;
-  background: #fafafa !important;
-}
-
-/* 제목 */
-h3 {
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text);
-}
-
-/* 본문 */
-p {
-  color: #374151 !important;
-}
-
-/* 하단 더 불러오기 영역 */
-div[style*="justify-content:center"][style*="gap:8px"] {
-  margin-top: 14px !important;
-}
-
-/* 버튼 공통(이 파일 안에서) */
-button {
-  border: 1px solid var(--line);
-  background: #fff;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #fafafa;
-  border-color: #d1d5db;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.article-modal__overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 12px;
-}
-
-.article-modal__panel {
-  width: min(1200px, 100%);
-  height: 90vh;
-  background: #fff;
-  border-radius: 14px;
+/* ✅ 피드 카드 */
+.feed-card {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background-color: rgba(30, 30, 30, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
+/* ✅ 헤더 */
+.feed-header {
+  padding: 12px 20px;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ✅ [추가] 웹(PC) 전용 라벨 스타일 */
+.desktop-label {
+  display: block; /* 기본적으로 보임 */
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+/* ✅ 탭 버튼 스타일 (다크 모드용) */
+.tab-btn {
+  /* [수정] 데스크탑에서는 숨김 */
+  display: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #888;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+.tab-btn.active {
+  background: #ffffff;
+  color: #000000;
+}
+
+/* ✅ 본문 (스크롤 영역) */
+.feed-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 20px 20px 20px;
+}
+
+.feed-body::-webkit-scrollbar {
+  width: 6px;
+}
+.feed-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.feed-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.status-msg {
+  padding: 24px 0;
+  text-align: center;
+  color: #999;
+}
+.status-msg.error {
+  color: #ff6b6b;
+}
+
+/* ✅ 기사 아이템 카드 */
+.article-item {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 0;
+}
+.article-item:last-child {
+  border-bottom: none;
+}
+.article-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* 썸네일 */
+.thumbnail-wrapper {
+  width: 120px;
+  flex: 0 0 120px;
+}
+.thumbnail-img {
+  width: 120px;
+  height: 84px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: block;
+}
+.thumbnail-placeholder {
+  width: 120px;
+  height: 84px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 12px;
+}
+
+/* 텍스트 스타일 */
+.meta-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.date {
+  font-size: 12px;
+  color: #888;
+}
+.article-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #f1f1f1;
+  margin: 0 0 8px 0;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.article-desc {
+  font-size: 14px;
+  color: #b0b0b0 !important;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 더 불러오기 */
+.load-more-area {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 10px;
+}
+.load-more-btn {
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.load-more-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+.load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* 새로고침 아이콘 */
+.refresh-icon-btn {
+  border: none;
+  background: transparent;
+  padding: 8px;
+  border-radius: 50%;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+.refresh-icon-btn svg {
+  width: 24px;
+  height: 24px;
+}
+.refresh-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: rotate(180deg);
+}
+.refresh-icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* 모달 스타일 */
+.article-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  backdrop-filter: blur(5px);
+}
+.article-modal__panel {
+  width: min(1000px, 100%);
+  height: 85vh;
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
 .article-modal__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
+  padding: 14px 20px;
   border-bottom: 1px solid #eee;
   font-weight: 700;
+  font-size: 16px;
+  color: #333;
 }
-
+.article-modal__header button {
+  border: none;
+  background: #f1f1f1;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #333;
+}
 .article-modal__iframe {
   flex: 1;
   width: 100%;
   height: 100%;
-  display: block;
   border: 0;
 }
 
-@media (max-width: 640px) {
+/* 모바일 반응형 */
+@media (max-width: 900px) {
+  .tab-btn {
+    display: block;
+  }
+  .desktop-label {
+    display: none;
+  }
+
   .article-modal__overlay {
     padding: 0;
   }
-
   .article-modal__panel {
     width: 100vw;
     height: 100vh;
