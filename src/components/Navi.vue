@@ -43,8 +43,13 @@
 
       <!-- 프롬프트 + 하위 -->
       <div class="navgroup">
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button :class="navBtnClass('prompt')" type="button" @click="goPrompt" style="flex:1;">
+        <div style="display: flex; gap: 8px; align-items: center">
+          <button
+            :class="navBtnClass('prompt')"
+            type="button"
+            @click="goPrompt"
+            style="flex: 1"
+          >
             프롬프트
           </button>
 
@@ -53,17 +58,15 @@
             class="sidenav__btn"
             @click="toggleDeleteMode"
             :disabled="loadingHistory"
-            style="width:auto; padding:10px 12px; font-weight:800;"
+            style="width: auto; padding: 10px 12px; font-weight: 800"
             :title="deleteMode ? '삭제 모드 종료' : '삭제 모드'"
           >
-            {{ deleteMode ? '완료' : '삭제' }}
+            {{ deleteMode ? "완료" : "삭제" }}
           </button>
         </div>
 
         <div class="subnav">
-          <div v-if="loadingHistory" class="subnav__empty">
-            불러오는 중...
-          </div>
+          <div v-if="loadingHistory" class="subnav__empty">불러오는 중...</div>
 
           <div v-else-if="!historyItems.length" class="subnav__empty">
             검색 기록 없음
@@ -72,14 +75,14 @@
           <div
             v-for="(item, idx) in historyItems"
             :key="`${item.id}-${idx}`"
-            style="display:flex; align-items:center; gap:8px;"
+            style="display: flex; align-items: center; gap: 8px"
           >
             <button
               type="button"
               class="subnav__btn"
               @click="goPromptWithQuery(item.query)"
               :title="item.query"
-              style="flex:1;"
+              style="flex: 1"
               :disabled="deletingId === item.id"
             >
               {{ item.query }}
@@ -92,10 +95,10 @@
               class="subnav__btn"
               @click="onDelete(item.id)"
               :disabled="deletingId === item.id"
-              style="width:40px; padding:8px 0; text-align:center;"
+              style="width: 40px; padding: 8px 0; text-align: center"
               title="삭제"
             >
-              {{ deletingId === item.id ? '...' : '-' }}
+              {{ deletingId === item.id ? "..." : "-" }}
             </button>
           </div>
         </div>
@@ -135,12 +138,12 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useHomePeriodStore } from '@/stores/homePeriodStore';
-import { usePromptStore } from '@/stores/promptStore';
-import SurveyApi from '@/api/SurveyApi';
-import { useUserStore } from '@/stores/user';
+import { computed, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useHomePeriodStore } from "@/stores/homePeriodStore";
+import { usePromptStore } from "@/stores/promptStore";
+import SurveyApi from "@/api/SurveyApi";
+import { useUserStore } from "@/stores/user";
 
 const router = useRouter();
 const route = useRoute();
@@ -167,31 +170,32 @@ onMounted(async () => {
 /* ---------- class helpers ---------- */
 const navBtnClass = (name) => {
   const isActive = currentName.value === name;
-  return ['sidenav__btn', isActive ? 'is-active' : ''].join(' ');
+  return ["sidenav__btn", isActive ? "is-active" : ""].join(" ");
 };
 
 const subBtnClass = (active) => {
-  return ['subnav__btn', active ? 'is-sub-active' : ''].join(' ');
+  return ["subnav__btn", active ? "is-sub-active" : ""].join(" ");
 };
 
 /* ---------- state helpers ---------- */
 const isHomeActivePeriod = (p) =>
-  currentName.value === 'home' && homePeriodStore.period === p;
-
+  currentName.value === "home" && homePeriodStore.period === p;
 
 const historyItems = computed(() => {
-  const raw = Array.isArray(promptStore.historyRaw) ? promptStore.historyRaw : [];
+  const raw = Array.isArray(promptStore.historyRaw)
+    ? promptStore.historyRaw
+    : [];
   return raw
     .map((x) => ({
       id: x.id,
-      query: (x.query || '').trim(),
+      query: (x.query || "").trim(),
     }))
     .filter((x) => x.id !== undefined && x.id !== null && x.query)
     .slice(0, 10);
 });
 
-const role = computed(() => userStore?.state?.user?.role || '');
-const isAdmin = computed(() => role.value === 'ADMIN');
+const role = computed(() => userStore?.state?.user?.role || "");
+const isAdmin = computed(() => role.value === "ADMIN");
 
 const adminModalOpen = ref(false);
 
@@ -206,40 +210,40 @@ const closeAdminModal = () => {
 };
 
 /* ---------- navigation ---------- */
-const goHome = () => router.push({ name: 'home' });
+const goHome = () => router.push({ name: "home" });
 
 const goHomeWithPeriod = async (period) => {
   homePeriodStore.setPeriod(period);
-  await router.push({ name: 'home' });
+  await router.push({ name: "home" });
 };
 
 const goMy = async () => {
   try {
     const res = await SurveyApi.getUserEmbedding();
     if (res.data.initialized) {
-      router.push({ name: 'my' });
+      router.push({ name: "my" });
     } else {
-      router.push({ name: 'Survey' });
+      router.push({ name: "Survey" });
     }
   } catch (error) {
-    console.error('유저 임베딩 데이터 조회 실패', error);
-    alert('오류가 발생했습니다. 다시 시도해주세요.');
+    console.error("유저 임베딩 데이터 조회 실패", error);
+    alert("오류가 발생했습니다. 다시 시도해주세요.");
   }
 };
 
-const goPrompt = () => router.push({ name: 'prompt' });
+const goPrompt = () => router.push({ name: "prompt" });
 
 const goPromptWithQuery = async (q) => {
-  const keyword = (q || '').trim();
+  const keyword = (q || "").trim();
   if (!keyword) return;
 
   await router.push({
-    name: 'prompt',
+    name: "prompt",
     query: { q: keyword },
   });
 };
 
-const goBuDongSan = () => router.push({ name: 'budong' });
+const goBuDongSan = () => router.push({ name: "budong" });
 
 /* ---------- delete ---------- */
 const onDelete = async (historyId) => {
