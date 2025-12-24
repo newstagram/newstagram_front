@@ -170,7 +170,7 @@ function goFindPwd() {
 <style scoped>
 /* ✅ 레이아웃 */
 .page-container {
-  height: calc(100vh - 56px); /* 전체 화면 높이 사용 */
+  height: 100%; /* 전체 화면 높이 사용 */
   padding: 16px;
   box-sizing: border-box;
   overflow: hidden;
@@ -457,14 +457,13 @@ function goFindPwd() {
 }
 
 /* 모바일 반응형 */
-@media (max-width: 640px) {
+@media (max-width: 900px) {
   .page-container {
     padding: 12px;
   }
 
   .feed-body.glass-panel-body {
     padding: 24px;
-    border-radius: 0 0 16px 16px;
   }
 
   .folder-tab {
