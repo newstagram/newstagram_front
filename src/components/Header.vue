@@ -2,6 +2,7 @@
   <header class="topbar glass-panel">
     <div v-if="!isSearchMode" class="topbar__inner">
       <button
+        v-if="!shouldHideMenu"
         class="topbar__menu"
         type="button"
         aria-label="Open navigation"
@@ -164,8 +165,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { ref, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import UserApi from "@/api/UserApi";
 import { useUserStore } from "@/stores/user";
 
@@ -182,7 +183,11 @@ defineProps({
 const emit = defineEmits(["toggle-nav", "submit-prompt"]);
 
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
+
+const hideMenuRoutes = new Set(["mypage"]);
+const shouldHideMenu = computed(() => hideMenuRoutes.has(route.name));
 
 // 모바일 검색 모드 상태 관리
 const isSearchMode = ref(false);
