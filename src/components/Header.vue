@@ -1,5 +1,5 @@
 <template>
-  <header class="topbar">
+  <header class="topbar glass-panel">
     <div v-if="!isSearchMode" class="topbar__inner">
       <button
         class="topbar__menu"
@@ -7,7 +7,21 @@
         aria-label="Open navigation"
         @click="emit('toggle-nav')"
       >
-        ☰
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
       </button>
 
       <button
@@ -46,6 +60,16 @@
               clip-rule="evenodd"
             />
           </svg>
+        </button>
+
+        <button
+          type="button"
+          class="theme-btn btn-glass"
+          @click="toggleTheme"
+          :title="theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'"
+        >
+          <span v-if="theme === 'dark'">☀️</span>
+          <span v-else>🌙</span>
         </button>
 
         <button
@@ -100,6 +124,10 @@ import { useUserStore } from "@/stores/user";
 import WritePrompt from "@/components/WritePrompt.vue";
 import profileIcon from "@/assets/profile_icon.svg";
 
+import { useTheme } from "@/composables/useTheme";
+
+const { theme, toggleTheme } = useTheme();
+
 defineProps({
   hidePrompt: { type: Boolean, default: false },
 });
@@ -120,11 +148,10 @@ const closeMobileSearch = () => {
   isSearchMode.value = false;
 };
 
-// 프롬프트 제출 핸들러 (제출 후 모바일 검색 모드 닫기 포함)
+// 프롬프트 제출 핸들러
 const handleSubmitPrompt = (text) => {
   emit("submit-prompt", text);
-  // 검색 후 검색창을 닫고 싶다면 아래 주석 해제
-  // closeMobileSearch();
+  // closeMobileSearch(); // 필요 시 활성화
 };
 
 const handleLogout = async () => {
@@ -143,11 +170,20 @@ const goMypage = () => router.push({ name: "mypage" });
 </script>
 
 <style scoped>
+/* ✅ 헤더 전체 (유리 효과 적용) */
 .topbar {
   position: sticky;
   top: 0;
   z-index: 50;
-  padding: 10px;
+  padding: 0;
+
+  /* CSS 변수 적용 */
+  background-color: var(--bg-panel);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-panel);
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .topbar__inner {
@@ -155,12 +191,12 @@ const goMypage = () => router.push({ name: "mypage" });
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 32px;
+  padding: 0 24px; /* 좌우 여백 조정 */
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 로고 */
+/* 로고 (그라데이션 텍스트) */
 .topbar__brand {
   border: none;
   background: transparent;
@@ -169,14 +205,16 @@ const goMypage = () => router.push({ name: "mypage" });
   font-weight: 900;
   font-size: 24px;
   letter-spacing: 0.05em;
+
+  /* 로고 색상은 고정하거나 테마에 맞춰 미세 조정 */
   background: linear-gradient(
     90deg,
-    #ffffff 0%,
-    #ffffff 20%,
-    #ffffff 50%,
-    #72d6f5 70%,
+    var(--text-primary) 0%,
+    var(--text-primary) 20%,
+    var(--text-primary) 50%,
+    var(--accent-color) 70%,
     #6c5ce7 80%,
-    #ffffff 100%
+    var(--text-primary) 100%
   );
   background-size: 200% auto;
   background-position: 0% 50%;
@@ -191,11 +229,7 @@ const goMypage = () => router.push({ name: "mypage" });
   background-position: 100% 50%;
 }
 
-/* -------------------------------------------
-  데스크탑 / 모바일 요소 제어 (Desktop first)
-------------------------------------------- */
-
-/* 데스크탑 검색창 (기본 보임) */
+/* 데스크탑 검색창 */
 .topbar__prompt-desktop {
   flex: 1;
   max-width: 640px;
@@ -205,41 +239,40 @@ const goMypage = () => router.push({ name: "mypage" });
   flex: 1;
 }
 
-/* 모바일 검색 트리거 버튼 (기본 숨김) */
+/* 모바일 검색 트리거 아이콘 */
 .mobile-search-trigger {
-  display: none; /* 데스크탑에서는 숨김 */
+  display: none;
   background: transparent;
   border: none;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   padding: 6px;
-  color: #fff;
+  color: var(--text-primary); /* 변수 사용 */
 }
 
 .mobile-search-trigger svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
-/* 모바일 메뉴 버튼 (기본 숨김) */
+/* 햄버거 메뉴 버튼 (모바일) */
 .topbar__menu {
   display: none;
-  border: 1px solid var(--line);
-  background: #fff;
-  color: var(--text);
-  border-radius: 12px;
-  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary); /* 변수 사용 */
+  padding: 4px;
   cursor: pointer;
-  font-weight: 800;
-  line-height: 1;
+  align-items: center;
+  justify-content: center;
 }
 
-/* 로그아웃 버튼 (텍스트/아이콘 스위칭) */
+/* 로그아웃 버튼 */
 .btn-logout {
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: var(--text-primary); /* 변수 사용 */
   cursor: pointer;
   padding: 0 8px;
   display: flex;
@@ -251,9 +284,8 @@ const goMypage = () => router.push({ name: "mypage" });
   opacity: 0.7;
 }
 
-/* 데스크탑: 텍스트 보임, 아이콘 숨김 */
 .logout-text {
-  font-weight: 300;
+  font-weight: 500;
   font-size: 14px;
   white-space: nowrap;
 }
@@ -285,10 +317,32 @@ const goMypage = () => router.push({ name: "mypage" });
   width: 32px;
   height: 32px;
   object-fit: contain;
+  border-radius: 50%;
+  border: 1px solid var(--border-glass); /* 테두리 추가 */
   transition: opacity 0.2s;
 }
 .btn-profile:hover {
   opacity: 0.8;
+}
+
+/* 테마 토글 버튼 (유리 스타일) */
+.theme-btn {
+  font-size: 18px;
+  width: 36px; /* 크기 조정 */
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-button-glass);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.theme-btn:hover {
+  background: var(--border-glass);
 }
 
 /* -------------------------------------------
@@ -297,17 +351,17 @@ const goMypage = () => router.push({ name: "mypage" });
 .topbar__inner.search-mode {
   padding: 0 16px;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.4); /* 모드 진입 시 배경 살짝 어둡게 */
+  background: var(--bg-panel); /* 배경색 변수 사용 */
 }
 
 .topbar__prompt-mobile {
-  flex: 1; /* 검색창이 남은 공간 꽉 채움 */
+  flex: 1;
 }
 
 .btn-cancel {
   background: transparent;
   border: none;
-  color: #ccc;
+  color: var(--text-secondary); /* 변수 사용 */
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
@@ -315,7 +369,7 @@ const goMypage = () => router.push({ name: "mypage" });
   padding: 8px;
 }
 .btn-cancel:hover {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 /* -------------------------------------------
@@ -328,24 +382,21 @@ const goMypage = () => router.push({ name: "mypage" });
 
   .topbar__brand {
     font-size: 20px;
-    margin-right: auto; /* 로고 왼쪽 정렬 유지 */
+    margin-right: auto;
   }
 
   .topbar__menu {
-    display: inline-flex; /* 메뉴 버튼 보임 */
+    display: inline-flex;
   }
 
-  /* 데스크탑 검색창 숨김 */
   .topbar__prompt-desktop {
     display: none;
   }
 
-  /* 모바일 검색 트리거 아이콘 보임 */
   .mobile-search-trigger {
     display: flex;
   }
 
-  /* 로그아웃: 텍스트 숨김, 아이콘 보임 */
   .logout-text {
     display: none;
   }
@@ -353,7 +404,6 @@ const goMypage = () => router.push({ name: "mypage" });
     display: block;
   }
 
-  /* 마진 조정 */
   .topbar__actions {
     margin-left: 0;
     gap: 4px;
