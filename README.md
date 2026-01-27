@@ -326,8 +326,8 @@ GOOGLE_REDIRECT_URI=(http://localhost:8080/api/login/oauth2/code/google)
 #GOOGLE_REDIRECT_URI=https://localhost:8080/api/login/oauth2/code/google
 
 # Gmail
-GMAIL_USERNAME=dabinchi9969@gmail.com
-GMAIL_APP_PASSWORD=fbnsevwojrhixiuy
+GMAIL_USERNAME=
+GMAIL_APP_PASSWORD=
 
 BASE_URL=http://localhost:8080
 
@@ -336,7 +336,7 @@ FRONT_URL=http://localhost:5173
 # SOLAPI
 SOLAPI_KEY=
 SOLAPI_SECRET=
-SOLAPI_FROM_NUMBER=01033295596
+SOLAPI_FROM_NUMBER=01012345678
 ```
 
 ### **IntelliJ IDEA 환경**
